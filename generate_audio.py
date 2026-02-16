@@ -23,7 +23,7 @@ def text_to_audio(text, output_dir="output", voice="Zoe (Premium)", rate=175):
         check=True,
     )
     subprocess.run(
-        ["afconvert", "-f", "m4af", "-d", "aac", "-b", "128000", aiff_path, m4a_path],
+        ["afconvert", "-f", "m4af", "-d", "aac", aiff_path, m4a_path],
         check=True,
     )
     os.remove(aiff_path)
