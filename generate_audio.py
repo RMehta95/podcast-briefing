@@ -1,37 +1,82 @@
 import os
-import subprocess
 from datetime import datetime
+from openai import OpenAI
 
 
-def text_to_audio(text, output_dir="output", voice="Zoe (Premium)", rate=175):
-    """Convert text to audio using macOS say command.
+def text_to_audio(text, output_dir="output", voice="nova"):
+    """Convert text to audio using OpenAI TTS.
 
     Args:
         text: The text to speak
         output_dir: Directory to save the audio file
-        voice: macOS voice to use (Samantha is clear and natural)
-        rate: Words per minute (default 175, normal speech is ~150-180)
+        voice: OpenAI voice to use (alloy, echo, fable, onyx, nova, shimmer)
     """
     os.makedirs(output_dir, exist_ok=True)
     date_str = datetime.now().strftime("%Y-%m-%d")
-    aiff_path = os.path.join(output_dir, f"{date_str}-briefing.aiff")
-    m4a_path = os.path.join(output_dir, f"{date_str}-briefing.m4a")
+    filepath = os.path.join(output_dir, f"{date_str}-briefing.m4a")
 
-    # Generate AIFF first, then convert to M4A
-    subprocess.run(
-        ["say", "-v", voice, "-r", str(rate), "-o", aiff_path, text],
-        check=True,
-    )
-    subprocess.run(
-        ["afconvert", "-f", "m4af", "-d", "aac", aiff_path, m4a_path],
-        check=True,
-    )
-    os.remove(aiff_path)
+    client = OpenAI()
 
-    return m4a_path
+    # OpenAI TTS has a 4096 char limit per request, so we chunk the text
+    chunks = _split_text(text, max_chars=4000)
+    temp_files = []
+
+    for i, chunk in enumerate(chunks):
+        temp_path = os.path.join(output_dir, f"_chunk_{i}.m4a")
+        response = client.audio.speech.create(
+            model="tts-1",
+            voice=voice,
+            input=chunk,
+            response_format="aac",
+        )
+        response.write_to_file(temp_path)
+        temp_files.append(temp_path)
+
+    if len(temp_files) == 1:
+        os.rename(temp_files[0], filepath)
+    else:
+        _concat_audio(temp_files, filepath)
+        for f in temp_files:
+            os.remove(f)
+
+    return filepath
 
 
-def list_voices():
-    """List available macOS voices."""
-    result = subprocess.run(["say", "-v", "?"], capture_output=True, text=True)
-    return result.stdout
+def _split_text(text, max_chars=4000):
+    """Split text into chunks at sentence boundaries."""
+    chunks = []
+    current = ""
+    for sentence in text.replace("\n", " ").split(". "):
+        candidate = current + sentence + ". "
+        if len(candidate) > max_chars and current:
+            chunks.append(current.strip())
+            current = sentence + ". "
+        else:
+            current = candidate
+    if current.strip():
+        chunks.append(current.strip())
+    return chunks
+
+
+def _concat_audio(files, output_path):
+    """Concatenate multiple audio files using ffmpeg or afconvert."""
+    import subprocess
+    # Use ffmpeg if available, otherwise fall back to cat for raw AAC
+    list_path = output_path + ".txt"
+    with open(list_path, "w") as f:
+        for path in files:
+            f.write(f"file '{os.path.abspath(path)}'\n")
+    try:
+        subprocess.run(
+            ["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", list_path,
+             "-c", "copy", output_path],
+            check=True, capture_output=True,
+        )
+    except FileNotFoundError:
+        # ffmpeg not installed — just concatenate raw AAC streams
+        with open(output_path, "wb") as out:
+            for path in files:
+                with open(path, "rb") as inp:
+                    out.write(inp.read())
+    finally:
+        os.remove(list_path)
