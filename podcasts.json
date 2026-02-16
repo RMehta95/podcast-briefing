@@ -1,0 +1,42 @@
+[
+  {
+    "name": "The Journal.",
+    "feed_url": "https://video-api.wsj.com/podcast/rss/wsj/the-journal"
+  },
+  {
+    "name": "All-In with Chamath, Jason, Sacks & Friedberg",
+    "feed_url": "https://allinchamathjason.libsyn.com/rss"
+  },
+  {
+    "name": "Up First from NPR",
+    "feed_url": "https://www.npr.org/rss/podcast.php?id=510318"
+  },
+  {
+    "name": "Lenny's Podcast",
+    "feed_url": "https://api.substack.com/feed/podcast/10845.rss"
+  },
+  {
+    "name": "The Twenty Minute VC (20VC)",
+    "feed_url": "https://thetwentyminutevc.libsyn.com/rss"
+  },
+  {
+    "name": "The a16z Show",
+    "feed_url": "https://feeds.simplecast.com/JGE3yC0V"
+  },
+  {
+    "name": "Dwarkesh Podcast",
+    "feed_url": "https://api.substack.com/feed/podcast/69345.rss"
+  },
+  {
+    "name": "Acquired",
+    "feed_url": "https://feeds.transistor.fm/acquired"
+  },
+  {
+    "name": "The Growth Podcast",
+    "feed_url": "https://api.substack.com/feed/podcast/454003/s/133669.rss"
+  },
+  {
+    "name": "The Daily",
+    "feed_url": "http://feeds.podtrac.com/zKq6WZZLTlbM"
+  }
+]
