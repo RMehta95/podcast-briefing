@@ -1,6 +1,9 @@
 import feedparser
+import urllib.request
 from datetime import datetime, timedelta, timezone
 from config import PODCASTS
+
+FEED_TIMEOUT = 30  # seconds per feed
 
 
 def fetch_recent_episodes(hours=24):
@@ -10,7 +13,8 @@ def fetch_recent_episodes(hours=24):
 
     for podcast in PODCASTS:
         try:
-            feed = feedparser.parse(podcast["feed_url"])
+            response = urllib.request.urlopen(podcast["feed_url"], timeout=FEED_TIMEOUT)
+            feed = feedparser.parse(response.read())
             for entry in feed.entries:
                 published = entry.get("published_parsed") or entry.get("updated_parsed")
                 if not published:

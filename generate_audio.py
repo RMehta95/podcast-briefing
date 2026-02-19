@@ -13,7 +13,7 @@ def text_to_audio(text, output_dir="output", voice="nova"):
     """
     os.makedirs(output_dir, exist_ok=True)
     date_str = datetime.now().strftime("%Y-%m-%d")
-    filepath = os.path.join(output_dir, f"{date_str}-briefing.m4a")
+    filepath = os.path.join(output_dir, f"{date_str}-briefing.mp3")
 
     client = OpenAI()
 
@@ -22,12 +22,12 @@ def text_to_audio(text, output_dir="output", voice="nova"):
     temp_files = []
 
     for i, chunk in enumerate(chunks):
-        temp_path = os.path.join(output_dir, f"_chunk_{i}.m4a")
+        temp_path = os.path.join(output_dir, f"_chunk_{i}.mp3")
         response = client.audio.speech.create(
             model="tts-1",
             voice=voice,
             input=chunk,
-            response_format="aac",
+            response_format="mp3",
         )
         response.write_to_file(temp_path)
         temp_files.append(temp_path)
@@ -59,9 +59,8 @@ def _split_text(text, max_chars=4000):
 
 
 def _concat_audio(files, output_path):
-    """Concatenate multiple audio files using ffmpeg or afconvert."""
+    """Concatenate multiple MP3 files using ffmpeg, or raw concatenation as fallback."""
     import subprocess
-    # Use ffmpeg if available, otherwise fall back to cat for raw AAC
     list_path = output_path + ".txt"
     with open(list_path, "w") as f:
         for path in files:
@@ -73,7 +72,7 @@ def _concat_audio(files, output_path):
             check=True, capture_output=True,
         )
     except FileNotFoundError:
-        # ffmpeg not installed — just concatenate raw AAC streams
+        # ffmpeg not installed — MP3 frames are self-contained so raw concat works
         with open(output_path, "wb") as out:
             for path in files:
                 with open(path, "rb") as inp:
