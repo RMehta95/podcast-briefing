@@ -13,7 +13,11 @@ def fetch_recent_episodes(hours=24):
 
     for podcast in PODCASTS:
         try:
-            response = urllib.request.urlopen(podcast["feed_url"], timeout=FEED_TIMEOUT)
+            req = urllib.request.Request(
+                podcast["feed_url"],
+                headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"},
+            )
+            response = urllib.request.urlopen(req, timeout=FEED_TIMEOUT)
             feed = feedparser.parse(response.read())
             for entry in feed.entries:
                 published = entry.get("published_parsed") or entry.get("updated_parsed")

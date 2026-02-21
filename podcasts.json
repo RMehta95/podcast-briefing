@@ -78,5 +78,9 @@
   {
     "name": "ESPN Daily",
     "feed_url": "https://feeds.megaphone.fm/ESP8348692127"
+  },
+  {
+    "name": "Plain English with Derek Thompson",
+    "feed_url": "https://feeds.megaphone.fm/plain-english"
   }
 ]
